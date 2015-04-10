@@ -1,9 +1,9 @@
-import bot_core
-
 def think(state, quip):
-    #This should be UCT with a look depth of 1? 
-    #UCT(rootstate, 1, itertime, verbose = False):
-    x = bot_core.UCT(rootstate = state, iterdepth = 1, itertime = 1, verbose = True)
-    output = "I'm greedily choosing " + bot_core.test("greedy")
-    quip(output)
-    return x
+   bestScore = state.get_score()
+   moves = state.get_moves()
+   for move in moves:
+      attempt = state.copy().apply_move(move)
+      if attempt.get_score() > bestScore:
+         bestMove = move
+         bestScore = attempt.get_score()
+   return bestMove
