@@ -3,9 +3,6 @@ import random
 import math
 
 class Node:
-    """ A node in the game tree. Note wins is always from the viewpoint of playerJustMoved.
-        Crashes if state not specified.
-    """
     def __init__(self, move = None, parent = None, state = None):
         self.move = move # the move that got us to this node - "None" for the root node
         self.parentNode = parent # "None" for the root node
@@ -14,7 +11,6 @@ class Node:
         self.visits = 0
         self.untriedMoves = state.get_moves() # future child nodes
         self.turn = state.get_whos_turn()
-        #self.playerJustMoved = state.get_whos_turn()  # the only part of the state that the Node needs later
         
     def UCTSelectChild(self):
         """ Use the UCB1 formula to select a child node. Often a constant UCTK is applied so we have
@@ -68,8 +64,9 @@ def UCT(rootstate, iterdepth, itertime, verbose = False):
 
     rootnode = Node(state = rootstate)      #set the root to current root passed in
     timeout = time.time() + itertime        #set the timeout
-    currentDepth = 0
+    rps = 0
     while time.time() < timeout:
+        currentDepth = 0
         node = rootnode
         state = rootstate.copy()
         # Select
@@ -86,15 +83,17 @@ def UCT(rootstate, iterdepth, itertime, verbose = False):
         # Rollout - this can often be made orders of magnitude quicker using a state.GetRandomMove() function
         while state.get_moves() != [] and currentDepth <= iterdepth: # while state is non-terminal
             state.apply_move(random.choice(state.get_moves()))
+            rps+=1
+            currentDepth+=1
         
         # Backpropagate
         while node != None: # backpropagate from the expanded node and work back to the root node
         #should add node.parentNode != None too?
-            node.Update(state.get_score()[node.turn]) # state is terminal. Update node with result from POV of node.playerJustMoved
+            node.Update(state.get_score()[node.parentNode.turn]) # state is terminal. Update node with result from POV of node.playerJustMoved
             node = node.parentNode
             
         # Output some information about the tree - can be omitted
         #if (verbose): print rootnode.TreeToString(0)
         #else: print rootnode.ChildrenToString()
-        
+    print "Rollouts per second: " + str(rps)
     return sorted(rootnode.childNodes, key = lambda c: c.visits)[-1].move # return the move that was most visited
