@@ -106,5 +106,5 @@ def UCT(rootstate, iterdepth, itertime, verbose = False):
         #if (verbose): print rootnode.TreeToString(0)
         #else: print rootnode.ChildrenToString()
 
-    print "Rollouts per second: " + str(rps)
+    print "Rollouts per second: " + str(rps / itertime)
     return sorted(rootnode.childNodes, key = lambda c: c.visits)[-1].move # return the move that was most visited
