@@ -5,7 +5,7 @@ import greedy_bot as red_bot
 import uct_bot as blue_bot
 BOTS = {'red': red_bot, 'blue': blue_bot}
 
-rounds = 100
+rounds = 5
 wins = defaultdict(lambda: 0)
 
 for i in range(rounds):

@@ -1,4 +1,6 @@
 import bot_core
 
 def think(state, quip):
-  return bot_core.UCT(state, 245, 1, verbose = True)
+  theMove = bot_core.UCT(state, 5, 1, verbose = True)
+  print("Move: ", theMove)
+  return theMove

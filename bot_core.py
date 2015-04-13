@@ -1,5 +1,6 @@
 import time
 import random
+import math
 
 class Node:
     """ A node in the game tree. Note wins is always from the viewpoint of playerJustMoved.
@@ -17,10 +18,11 @@ class Node:
         
     def UCTSelectChild(self):
         """ Use the UCB1 formula to select a child node. Often a constant UCTK is applied so we have
-            lambda c: c.wins/c.visits + UCTK * sqrt(2*log(self.visits)/c.visits to vary the amount of
+            lambda c: c.wins/c.visits + UCTK * math.sqrt(2*math.log(self.visits)/c.visits to vary the amount of
             exploration versus exploitation.
+            Has to be float(c.wins)/c.visits from Piazza clue
         """
-        s = sorted(self.childNodes, key = lambda c: c.wins/c.visits + sqrt(2*log(self.visits)/c.visits))[-1]
+        s = sorted(self.childNodes, key = lambda c: float(c.wins)/c.visits + math.sqrt(2*math.log(self.visits)/c.visits))[-1]
         return s
    
     def AddChild(self, m, s):
@@ -38,7 +40,7 @@ class Node:
         self.wins += result
 
     def __repr__(self):
-        return "[M:" + str(self.move) + " W/V:" + str(self.wins) + "/" + str(self.visits) + " U:" + str(self.untriedMoves) + "]"
+        return "[M:" + str(self.move) + " Wins/Visits:" + str(self.wins) + "/" + str(self.visits) + " U:" + str(self.untriedMoves) + "]"
 
     def TreeToString(self, indent):
         s = self.IndentString(indent) + str(self)
@@ -87,11 +89,12 @@ def UCT(rootstate, iterdepth, itertime, verbose = False):
         
         # Backpropagate
         while node != None: # backpropagate from the expanded node and work back to the root node
-            node.Update(state.get_score()[state.get_whos_turn()]) # state is terminal. Update node with result from POV of node.playerJustMoved
+        #should add node.parentNode != None too?
+            node.Update(state.get_score()[node.turn]) # state is terminal. Update node with result from POV of node.playerJustMoved
             node = node.parentNode
             
         # Output some information about the tree - can be omitted
-        if (verbose): print rootnode.TreeToString(0)
-        else: print rootnode.ChildrenToString()
+        #if (verbose): print rootnode.TreeToString(0)
+        #else: print rootnode.ChildrenToString()
         
-        return sorted(rootnode.childNodes, key = lambda c: c.visits)[-1].move # return the move that was most visited
+    return sorted(rootnode.childNodes, key = lambda c: c.visits)[-1].move # return the move that was most visited
