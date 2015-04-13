@@ -68,8 +68,10 @@ def UCT(rootstate, iterdepth, itertime, verbose = False):
 
     rootnode = Node(state = rootstate)      #set the root to current root passed in
     timeout = time.time() + itertime        #set the timeout
-    currentDepth = 0
+    numRollouts = 0
+    
     while time.time() < timeout:
+        currentDepth = 0
         node = rootnode
         state = rootstate.copy()
         # Select
@@ -86,15 +88,26 @@ def UCT(rootstate, iterdepth, itertime, verbose = False):
         # Rollout - this can often be made orders of magnitude quicker using a state.GetRandomMove() function
         while state.get_moves() != [] and currentDepth <= iterdepth: # while state is non-terminal
             state.apply_move(random.choice(state.get_moves()))
+            numRollouts+=1
+            currentDepth+=1
+        
+        #print("new iterdepth:",iterdepth)
+        iterdepth=0
         
         # Backpropagate
         while node != None: # backpropagate from the expanded node and work back to the root node
         #should add node.parentNode != None too?
-            node.Update(state.get_score()[node.turn]) # state is terminal. Update node with result from POV of node.playerJustMoved
+
+            if (node.parentNode != None):
+                node.Update(state.get_score()[node.parentNode.turn])
+            else:
+                node.Update(state.get_score()[node.turn])
+            #node.Update(state.get_score()[node.turn]) # state is terminal. Update node with result from POV of node.playerJustMoved
+            #node.Update(state.get_score()[node.parentNode.turn])
             node = node.parentNode
-            
+
         # Output some information about the tree - can be omitted
         #if (verbose): print rootnode.TreeToString(0)
         #else: print rootnode.ChildrenToString()
-        
+    print("rolled out", numRollouts, " times")
     return sorted(rootnode.childNodes, key = lambda c: c.visits)[-1].move # return the move that was most visited
